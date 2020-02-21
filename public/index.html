@@ -23,10 +23,10 @@
     <button v-on:click="getInfo">Info</button>
     <button v-on:click="describe">Describe</button>
     <button v-on:click="hist">Histogram</button>
-    <p>{{ result }}</p>
-    <p>{{ info }}</p>
-    <b-table striped hover :items="items"></b-table>
-    <img v-bind:src="imageHref">
+    <p v-if="result">{{ result }}</p>
+    <p v-if="info">{{ info }}</p>
+    <b-table v-if="items" striped hover :items="items"></b-table>
+    <img  v-if="imageHref" v-bind:src="imageHref">
 </div>
 <script src="/public/main.js"></script>
 </body>

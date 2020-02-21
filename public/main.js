@@ -6,6 +6,7 @@ new Vue({
             items: null,
             sess: 0,
             info: null,
+            imageHref: null
         }
     },
     methods: {
@@ -26,17 +27,21 @@ new Vue({
             for (let [colName, colData] of Object.entries(df)) {
                 for (let [rowIndex, cellData] of Object.entries(colData)) {
                     if (!rows[rowIndex]) {
-                        rows[rowIndex] = {index: parseInt(rowIndex)}
+                        rows[rowIndex] = {index: rowIndex}
                     }
                     rows[rowIndex][colName] = cellData
                 }
             }
             return Object.values(rows)
         },
+        clearAll() {
+            this.info = null
+            this.items = null
+            this.imageHref = null
+        },
         load: function () {
             const scope = this
-            scope.info = null
-            scope.items = null
+            this.clearAll()
             this.run('load', scope.sess, function (result) {
                 scope.result = result.message
                 if (result.success === true) {
@@ -46,9 +51,18 @@ new Vue({
         },
         getHead: function () {
             const scope = this
-            scope.info = null
-            scope.items = null
+            this.clearAll()
             this.run('head', scope.sess, function (result) {
+                scope.result = result.message
+                if (result.success === true) {
+                    scope.items = scope.pythonDataframeToVueTable(result.data)
+                }
+            })
+        },
+        describe: function () {
+            const scope = this
+            this.clearAll()
+            this.run('describe', scope.sess, function (result) {
                 scope.result = result.message
                 if (result.success === true) {
                     scope.items = scope.pythonDataframeToVueTable(result.data)
@@ -57,12 +71,21 @@ new Vue({
         },
         getInfo: function () {
             const scope = this
-            scope.info = null
-            scope.items = null
+            this.clearAll()
             this.run('info', scope.sess, function (result) {
                 scope.result = result.message
                 if (result.success === true) {
                     scope.info = result.data
+                }
+            })
+        },
+        hist: function () {
+            const scope = this
+            this.clearAll()
+            this.run('hist', scope.sess, function (result) {
+                scope.result = result.message
+                if (result.success === true) {
+                    scope.imageHref = result.data
                 }
             })
         }

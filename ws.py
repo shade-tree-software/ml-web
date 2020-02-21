@@ -26,12 +26,25 @@ class MyWebService(object):
                     return json.dumps({'success': True, 'data': housing.head().to_dict()})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'describe':
+                if data['sess'] in self.sessions:
+                    housing = self.sessions[data['sess']]
+                    return json.dumps({'success': True, 'data': housing.describe().to_dict()})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'info':
                 if data['sess'] in self.sessions:
                     housing = self.sessions[data['sess']]
                     buffer = io.StringIO()
                     housing.info(buf=buffer)
                     return json.dumps({'success': True, 'data': buffer.getvalue()})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'hist':
+                if data['sess'] in self.sessions:
+                    housing = self.sessions[data['sess']]
+                    path = h.plot_hist(housing, data['sess'])
+                    return json.dumps({'success': True, 'data': path})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
 

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Load required Bootstrap and BootstrapVue CSS -->
-    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" />
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css"/>
 
     <!-- Load Vue followed by BootstrapVue -->
     <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
@@ -17,16 +17,25 @@
 </head>
 <body>
 <div id="app">
-    <label>Session ID<input v-model="sess"></label>
-    <button v-on:click="load">Load</button>
-    <button v-on:click="getHead">Head</button>
-    <button v-on:click="getInfo">Info</button>
-    <button v-on:click="describe">Describe</button>
-    <button v-on:click="hist">Histogram</button>
+    <div>
+        <label>Session ID<input v-model="sess"></label>
+        <button v-on:click="load">Load</button>
+        <button v-on:click="getHead">Head</button>
+        <button v-on:click="getInfo">Info</button>
+        <button v-on:click="describe">Describe</button>
+        <button v-on:click="hist">Histogram</button>
+        <button v-on:click="pca">PCA</button>
+        <button v-on:click="tsne">t-SNE</button>
+    </div>
+    <br/>
     <p v-if="result">{{ result }}</p>
     <p v-if="info">{{ info }}</p>
-    <b-table v-if="items" striped hover :items="items"></b-table>
-    <img  v-if="imageHref" v-bind:src="imageHref">
+    <b-table v-if="items" striped hover :items="items" :fields="fields"></b-table>
+    <img v-if="imageHref" v-bind:src="imageHref">
+    <div v-if="arr">
+        <div v-for="str in arr">{{ str }}</div>
+        <br/>
+    </div>
 </div>
 <script src="/public/main.js"></script>
 </body>

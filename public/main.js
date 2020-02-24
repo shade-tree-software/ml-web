@@ -6,7 +6,8 @@ new Vue({
             items: null,
             sess: 0,
             info: null,
-            imageHref: null
+            imageHref: null,
+            arr: null
         }
     },
     methods: {
@@ -24,20 +25,27 @@ new Vue({
         },
         pythonDataframeToVueTable: function(df) {
             let rows = {}
+            let fields = ['index']
             for (let [colName, colData] of Object.entries(df)) {
+                let firstRow = true
                 for (let [rowIndex, cellData] of Object.entries(colData)) {
                     if (!rows[rowIndex]) {
                         rows[rowIndex] = {index: rowIndex}
                     }
                     rows[rowIndex][colName] = cellData
+                    if (firstRow) {
+                        fields.push(colName)
+                    }
                 }
+                firstRow = false
             }
-            return Object.values(rows)
+            return [Object.values(rows), fields]
         },
         clearAll() {
             this.info = null
             this.items = null
             this.imageHref = null
+            this.arr = null
         },
         load: function () {
             const scope = this
@@ -55,7 +63,7 @@ new Vue({
             this.run('head', scope.sess, function (result) {
                 scope.result = result.message
                 if (result.success === true) {
-                    scope.items = scope.pythonDataframeToVueTable(result.data)
+                    [scope.items, scope.fields] = scope.pythonDataframeToVueTable(result.data)
                 }
             })
         },
@@ -65,7 +73,7 @@ new Vue({
             this.run('describe', scope.sess, function (result) {
                 scope.result = result.message
                 if (result.success === true) {
-                    scope.items = scope.pythonDataframeToVueTable(result.data)
+                    [scope.items, scope.fields] = scope.pythonDataframeToVueTable(result.data)
                 }
             })
         },
@@ -86,6 +94,26 @@ new Vue({
                 scope.result = result.message
                 if (result.success === true) {
                     scope.imageHref = result.data
+                }
+            })
+        },
+        tsne: function () {
+            const scope = this
+            this.clearAll()
+            this.run('tsne', scope.sess, function (result) {
+                scope.result = result.message
+                if (result.success === true) {
+                    scope.imageHref = result.data
+                }
+            })
+        },
+        pca: function () {
+            const scope = this
+            this.clearAll()
+            this.run('pca', scope.sess, function (result) {
+                scope.result = result.message
+                if (result.success === true) {
+                    scope.arr = result.data
                 }
             })
         }

@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 import seaborn as sns
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
+import numpy as np
 
 LOAD_PATH = 'data'
 WORKING_PATH = 'public/tmp'
@@ -48,3 +50,9 @@ class MachineLearning:
                     'Variance of first 200 components: ' + str(component_importance.loc[:, 0:199].sum(axis=1).values),
                     'Variance of first 300 components: ' + str(component_importance.loc[:, 0:299].sum(axis=1).values)]
         return [df_pca, variance]
+
+    def k_means(self, df):
+        kmeans = KMeans(n_clusters=10)
+        dist = kmeans.fit_transform(df)
+        idx = np.argmin(dist, axis=0)
+        return df.iloc[idx]

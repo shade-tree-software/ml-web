@@ -116,6 +116,16 @@ new Vue({
                     scope.arr = result.data
                 }
             })
+        },
+        kmeans: function () {
+            const scope = this
+            this.clearAll()
+            this.run('kmeans', scope.sess, function (result) {
+                scope.result = result.message
+                if (result.success === true) {
+                    [scope.items, scope.fields] = scope.pythonDataframeToVueTable(result.data)
+                }
+            })
         }
     }
 })

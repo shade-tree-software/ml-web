@@ -8,8 +8,9 @@ new Vue({
             info: null,
             imageHref: null,
             arr: null,
-            vars: null,
-            selectedVar: null
+            vars: {X: [], y: []},
+            selectedXVar: null,
+            selectedYVar: null,
         }
     },
     methods: {
@@ -21,7 +22,7 @@ new Vue({
                 method: 'post', headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({cmd, varName: scope.selectedVar, sess: scope.sess})
+                body: JSON.stringify({cmd, x: scope.selectedXVar, y: scope.selectedYVar, sess: scope.sess})
             }).then(function (response) {
                 return response.json()
             }).then(function (jsonResponse) {
@@ -30,8 +31,8 @@ new Vue({
                 if (response.success === true) {
                     if (response.vars) {
                         scope.vars = response.vars
-                        if (scope.selectedVar === null) {
-                            scope.selectedVar = scope.vars[0]
+                        if (scope.selectedXVar === null && scope.vars.X) {
+                            scope.selectedXVar = scope.vars.X[0]
                         }
                     }
                     success(response)

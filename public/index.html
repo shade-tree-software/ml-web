@@ -20,15 +20,19 @@
     <div>
         <label>Session ID<input v-model="sess"></label>
         <button v-on:click="load">Load</button>
-        <select v-bind:disabled="vars === null" v-model="selectedVar">
-            <option v-for="option in vars" v-bind:value="option">{{ option }}</option>
+        <select v-bind:disabled="vars.X.length < 1" v-model="selectedXVar">
+            <option v-for="option in vars.X" v-bind:value="option">{{ option }}</option>
         </select>
-        <button v-on:click="getHead" v-bind:disabled="selectedVar === null">Head</button>
-        <button v-on:click="describe" v-bind:disabled="selectedVar === null">Describe</button>
-        <button v-on:click="hist" v-bind:disabled="selectedVar === null">Histogram</button>
-        <button v-on:click="pca" v-bind:disabled="selectedVar === null">PCA</button>
-        <button v-on:click="tsne" v-bind:disabled="selectedVar === null">t-SNE</button>
-        <button v-on:click="kmeans" v-bind:disabled="selectedVar === null">K-Means</button>
+        <select v-bind:disabled="vars.y.length < 1" v-model="selectedYVar">
+            <option value="null"></option>
+            <option v-for="option in vars.y" v-bind:value="option">{{ option }}</option>
+        </select>
+        <button v-on:click="getHead" v-bind:disabled="selectedXVar === null">Head</button>
+        <button v-on:click="describe" v-bind:disabled="selectedXVar === null">Describe</button>
+        <button v-on:click="hist" v-bind:disabled="selectedXVar === null">Histogram</button>
+        <button v-on:click="pca" v-bind:disabled="selectedXVar === null">PCA</button>
+        <button v-on:click="tsne" v-bind:disabled="selectedXVar === null">t-SNE</button>
+        <button v-on:click="kmeans" v-bind:disabled="selectedXVar === null">K-Means</button>
     </div>
     <br/>
     <p v-if="message">{{ message }}</p>

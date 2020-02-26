@@ -14,8 +14,13 @@ WORKING_PATH = 'public/tmp'
 class MachineLearning:
 
     def load_csv_as_df(self, sess, working_path=LOAD_PATH):
-        csv_path = os.path.join(working_path, "data_" + str(sess) + ".csv")
-        return pd.read_csv(csv_path)
+        x_path = os.path.join(working_path, "data_" + str(sess) + "_X.csv")
+        x = pd.read_csv(x_path)
+        y_path = os.path.join(working_path, "data_" + str(sess) + "_y.csv")
+        y = None
+        if os.path.exists(y_path):
+            y = pd.read_csv(y_path)
+        return [x, y]
 
     def __save_plot_to_file(self, sess):
         fig_path = os.path.join(WORKING_PATH, "fig_" + str(sess))
@@ -26,17 +31,20 @@ class MachineLearning:
         df.hist(bins=50, figsize=(20, 15))
         return self.__save_plot_to_file(sess)
 
-    def __scatter_plot(self, df, algo_name):
-        tmp_df = pd.DataFrame(data=df.loc[:, 0:1], index=df.index)
-        tmp_df.columns = ['First Vector', 'Second Vector']
-        sns.lmplot(x='First Vector', y='Second Vector', data=tmp_df, fit_reg=False)
-        ax = plt.gca()
-        ax.set_title('Separation of Observations using ' + algo_name)
+    def __scatter_plot(self, x_df, y_df=None):
+        tmp_df = pd.DataFrame(data=x_df.loc[:, 0:1], index=x_df.index)
+        if y_df is not None:
+            tmp_df = pd.concat((tmp_df, y_df), axis=1, join='inner')
+            tmp_df.columns = ['First Vector', 'Second Vector', 'Label']
+            sns.lmplot(x='First Vector', y='Second Vector', hue='Label', data=tmp_df, fit_reg=False)
+        else:
+            tmp_df.columns = ['First Vector', 'Second Vector']
+            sns.lmplot(x='First Vector', y='Second Vector', data=tmp_df, fit_reg=False)
 
-    def plot_tsne(self, df, sess, max_row=5000, max_col=9):
+    def plot_tsne(self, x_df, y_df, sess, max_row=5000, max_col=9):
         tsne = TSNE()
-        df_tsne = pd.DataFrame(data=tsne.fit_transform(df.loc[:max_row, :max_col], df.index[:max_row+1]))
-        self.__scatter_plot(df_tsne, 't-SNE')
+        x_df_tsne = pd.DataFrame(data=tsne.fit_transform(x_df.loc[:max_row, :max_col], x_df.index[:max_row + 1]))
+        self.__scatter_plot(x_df_tsne, y_df)
         return self.__save_plot_to_file(sess)
 
     def pca(self, df):
@@ -55,4 +63,5 @@ class MachineLearning:
         kmeans = KMeans(n_clusters=10)
         dist = kmeans.fit_transform(df)
         idx = np.argmin(dist, axis=0)
-        return df.iloc[idx]
+        labels_df = pd.DataFrame(data=kmeans.labels_, index=df.index)
+        return [labels_df, df.iloc[idx]]

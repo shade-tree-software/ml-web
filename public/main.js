@@ -2,28 +2,43 @@ new Vue({
     el: '#app',
     data: function () {
         return {
-            result: 'no response yet',
+            message: 'no response yet',
             items: null,
             sess: 0,
             info: null,
             imageHref: null,
-            arr: null
+            arr: null,
+            vars: null,
+            selectedVar: null
         }
     },
     methods: {
-        run: function (cmd, sess, cb) {
+        _run: function (cmd, success) {
+            const scope = this
+            scope._clearAll()
+            scope.message = "just a moment..."
             fetch('http://localhost:8080/process', {
                 method: 'post', headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({cmd, sess})
+                body: JSON.stringify({cmd, varName: scope.selectedVar, sess: scope.sess})
             }).then(function (response) {
                 return response.json()
-            }).then(function (jsonData) {
-                cb(JSON.parse(jsonData))
+            }).then(function (jsonResponse) {
+                let response = JSON.parse(jsonResponse)
+                scope.message = response.message
+                if (response.success === true) {
+                    if (response.vars) {
+                        scope.vars = response.vars
+                        if (scope.selectedVar === null) {
+                            scope.selectedVar = scope.vars[0]
+                        }
+                    }
+                    success(response)
+                }
             })
         },
-        pythonDataframeToVueTable: function(df) {
+        pythonDataframeToVueTable: function (df) {
             let rows = {}
             let fields = ['index']
             for (let [colName, colData] of Object.entries(df)) {
@@ -41,90 +56,58 @@ new Vue({
             }
             return [Object.values(rows), fields]
         },
-        clearAll() {
-            this.info = null
+        _clearAll() {
+            this.message = null
             this.items = null
             this.imageHref = null
             this.arr = null
         },
         load: function () {
             const scope = this
-            this.clearAll()
-            this.run('load', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    scope.info = 'Success'
-                }
+            this._run('load', function () {
+                scope.message = 'Success'
             })
         },
         getHead: function () {
             const scope = this
-            this.clearAll()
-            this.run('head', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    [scope.items, scope.fields] = scope.pythonDataframeToVueTable(result.data)
-                }
+            this._run('head', function (response) {
+                [scope.items, scope.fields] = scope.pythonDataframeToVueTable(response.data)
             })
         },
         describe: function () {
             const scope = this
-            this.clearAll()
-            this.run('describe', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    [scope.items, scope.fields] = scope.pythonDataframeToVueTable(result.data)
-                }
+            this._run('describe', function (response) {
+                [scope.items, scope.fields] = scope.pythonDataframeToVueTable(response.data)
             })
         },
         getInfo: function () {
             const scope = this
-            this.clearAll()
-            this.run('info', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    scope.info = result.data
-                }
+            this._run('info', function (response) {
+                scope.message = response.data
             })
         },
         hist: function () {
             const scope = this
-            this.clearAll()
-            this.run('hist', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    scope.imageHref = result.data
-                }
+            this._run('hist', scope.sess, function (response) {
+                scope.imageHref = response.data
             })
         },
         tsne: function () {
             const scope = this
-            this.clearAll()
-            this.run('tsne', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    scope.imageHref = result.data
-                }
+            this._run('tsne', function (response) {
+                scope.imageHref = response.data
             })
         },
         pca: function () {
             const scope = this
-            this.clearAll()
-            this.run('pca', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    scope.arr = result.data
-                }
+            this._run('pca', function (response) {
+                scope.arr = response.data
             })
         },
         kmeans: function () {
             const scope = this
-            this.clearAll()
-            this.run('kmeans', scope.sess, function (result) {
-                scope.result = result.message
-                if (result.success === true) {
-                    [scope.items, scope.fields] = scope.pythonDataframeToVueTable(result.data)
-                }
+            this._run('kmeans', function (response) {
+                [scope.items, scope.fields] = scope.pythonDataframeToVueTable(response.data)
             })
         }
     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -9,28 +9,29 @@
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css"/>
 
     <!-- Load Vue followed by BootstrapVue -->
-    <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
-    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+    <script type="text/javascript" src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script type="text/javascript" src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
 
     <!-- Load the following for BootstrapVueIcons support -->
-    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+    <script type="text/javascript" src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
 </head>
 <body>
 <div id="app">
     <div>
         <label>Session ID<input v-model="sess"></label>
         <button v-on:click="load">Load</button>
-        <button v-on:click="getHead">Head</button>
-        <button v-on:click="getInfo">Info</button>
-        <button v-on:click="describe">Describe</button>
-        <button v-on:click="hist">Histogram</button>
-        <button v-on:click="pca">PCA</button>
-        <button v-on:click="tsne">t-SNE</button>
-        <button v-on:click="kmeans">K-Means</button>
+        <select v-bind:disabled="vars === null" v-model="selectedVar">
+            <option v-for="option in vars" v-bind:value="option">{{ option }}</option>
+        </select>
+        <button v-on:click="getHead" v-bind:disabled="selectedVar === null">Head</button>
+        <button v-on:click="describe" v-bind:disabled="selectedVar === null">Describe</button>
+        <button v-on:click="hist" v-bind:disabled="selectedVar === null">Histogram</button>
+        <button v-on:click="pca" v-bind:disabled="selectedVar === null">PCA</button>
+        <button v-on:click="tsne" v-bind:disabled="selectedVar === null">t-SNE</button>
+        <button v-on:click="kmeans" v-bind:disabled="selectedVar === null">K-Means</button>
     </div>
     <br/>
-    <p v-if="result">{{ result }}</p>
-    <p v-if="info">{{ info }}</p>
+    <p v-if="message">{{ message }}</p>
     <b-table v-if="items" striped hover :items="items" :fields="fields"></b-table>
     <img v-if="imageHref" v-bind:src="imageHref">
     <div v-if="arr">

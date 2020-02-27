@@ -6,6 +6,7 @@ import seaborn as sns
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
 import numpy as np
+import time
 
 LOAD_PATH = 'data'
 WORKING_PATH = 'public/tmp'
@@ -23,7 +24,7 @@ class MachineLearning:
         return [x, y]
 
     def __save_plot_to_file(self, sess):
-        fig_path = os.path.join(WORKING_PATH, "fig_" + str(sess))
+        fig_path = os.path.join(WORKING_PATH, "fig_" + str(sess) + '_' + str(int(time.time())))
         plt.savefig(fig_path)
         return '/' + fig_path + '.png'
 
@@ -31,7 +32,7 @@ class MachineLearning:
         df.hist(bins=50, figsize=(20, 15))
         return self.__save_plot_to_file(sess)
 
-    def __scatter_plot(self, x_df, y_df=None):
+    def scatter_plot(self, sess, x_df, y_df=None):
         tmp_df = pd.DataFrame(data=x_df.loc[:, 0:1], index=x_df.index)
         if y_df is not None:
             tmp_df = pd.concat((tmp_df, y_df), axis=1, join='inner')
@@ -40,15 +41,18 @@ class MachineLearning:
         else:
             tmp_df.columns = ['First Vector', 'Second Vector']
             sns.lmplot(x='First Vector', y='Second Vector', data=tmp_df, fit_reg=False)
-
-    def plot_tsne(self, x_df, y_df, sess, max_row=5000, max_col=9):
-        tsne = TSNE()
-        x_df_tsne = pd.DataFrame(data=tsne.fit_transform(x_df.loc[:max_row, :max_col], x_df.index[:max_row + 1]))
-        self.__scatter_plot(x_df_tsne, y_df)
         return self.__save_plot_to_file(sess)
 
+    def tsne_lite(self, x_df, max_row=5000, max_col=9):
+        t_sne = TSNE()
+        return pd.DataFrame(data=t_sne.fit_transform(x_df.loc[:max_row, :max_col]), index=x_df.index[:max_row + 1])
+
+    def tsne(self, x_df, max_col=9):
+        t_sne = TSNE()
+        return pd.DataFrame(data=t_sne.fit_transform(x_df.loc[:, :max_col]), index=x_df.index)
+
     def pca(self, df):
-        pca = PCA(n_components=df.shape[1])
+        pca = PCA(n_components=min(df.shape[0], df.shape[1]))
         df_pca = pd.DataFrame(data=pca.fit_transform(df), index=df.index)
         component_importance = pd.DataFrame(data=pca.explained_variance_ratio_).T
         variance = ['Variance of first 10 components: ' + str(component_importance.loc[:, 0:9].sum(axis=1).values),
@@ -59,9 +63,35 @@ class MachineLearning:
                     'Variance of first 300 components: ' + str(component_importance.loc[:, 0:299].sum(axis=1).values)]
         return [df_pca, variance]
 
-    def k_means(self, df):
-        kmeans = KMeans(n_clusters=10)
-        dist = kmeans.fit_transform(df)
-        idx = np.argmin(dist, axis=0)
-        labels_df = pd.DataFrame(data=kmeans.labels_, index=df.index)
-        return [labels_df, df.iloc[idx]]
+    def kmeans(self, df, k):
+        k_means = KMeans(n_clusters=k)
+
+        # distribution showing each sample and how close it is to each cluster
+        dist = k_means.fit_transform(df)
+        dist_df = pd.DataFrame(data=dist, index=df.index)
+
+        # the labels, one per sample, showing to which cluster the sample has been assigned
+        labels_df = pd.DataFrame(data=k_means.labels_, index=df.index)
+
+        # for each cluster, the one sample that is closest to the cluster centroid
+        best_reps_idx = np.argmin(dist, axis=0)
+        best_reps_df = df.iloc[best_reps_idx]
+
+        # for each cluster, the 20% of the samples that are closest to the cluster centroid
+        percentile_closest = 20
+        x_cluster_dist = dist[np.arange(len(df)), k_means.labels_]
+        for i in range(k):
+            in_cluster = (k_means.labels_ == i)
+            cluster_dist = x_cluster_dist[in_cluster]
+            cutoff_distance = np.percentile(cluster_dist, percentile_closest)
+            above_cutoff = (x_cluster_dist > cutoff_distance)
+            x_cluster_dist[in_cluster & above_cutoff] = -1
+        best_20_index = (x_cluster_dist != -1)
+        best_20_df = df[best_20_index]
+        best_20_labels_df = labels_df[best_20_index]
+
+        # the cluster centroids
+        clusters_df = pd.DataFrame(data=k_means.cluster_centers_)
+
+        return {'labels': labels_df, 'dist': dist_df, 'best_reps': best_reps_df, 'clusters': clusters_df,
+                'best20': best_20_df, 'best20labels': best_20_labels_df}

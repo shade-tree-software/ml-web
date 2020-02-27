@@ -3,7 +3,8 @@ new Vue({
     data: function () {
         return {
             message: 'no response yet',
-            items: null,
+            items: [],
+            fields: [],
             sess: 0,
             info: null,
             imageHref: null,
@@ -11,10 +12,12 @@ new Vue({
             vars: {X: [], y: []},
             selectedXVar: null,
             selectedYVar: null,
+            imageKey: 0,
+            clusters: 10,
         }
     },
     methods: {
-        _run: function (cmd, success) {
+        _run: function (cmd, params, success) {
             const scope = this
             scope._clearAll()
             scope.message = "just a moment..."
@@ -22,7 +25,13 @@ new Vue({
                 method: 'post', headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({cmd, x: scope.selectedXVar, y: scope.selectedYVar, sess: scope.sess})
+                body: JSON.stringify({
+                    cmd,
+                    x: scope.selectedXVar,
+                    y: scope.selectedYVar ? scope.selectedYVar : null,
+                    params,
+                    sess: scope.sess
+                })
             }).then(function (response) {
                 return response.json()
             }).then(function (jsonResponse) {
@@ -59,57 +68,79 @@ new Vue({
         },
         _clearAll() {
             this.message = null
-            this.items = null
+            this.items = []
             this.imageHref = null
             this.arr = null
         },
         load: function () {
             const scope = this
-            this._run('load', function () {
+            this._run('load', null, function () {
                 scope.message = 'Success'
             })
         },
         getHead: function () {
             const scope = this
-            this._run('head', function (response) {
-                [scope.items, scope.fields] = scope.pythonDataframeToVueTable(response.data)
+            this._run('head', null, function (response) {
+                let index = 0
+                for (let df of response.data) {
+                    [scope.items[index], scope.fields[index]] = scope.pythonDataframeToVueTable(df)
+                    index++
+                }
             })
         },
         describe: function () {
             const scope = this
-            this._run('describe', function (response) {
-                [scope.items, scope.fields] = scope.pythonDataframeToVueTable(response.data)
+            this._run('describe', null, function (response) {
+                let index = 0
+                for (let df of response.data) {
+                    [scope.items[index], scope.fields[index]] = scope.pythonDataframeToVueTable(df)
+                    index++
+                }
             })
         },
         getInfo: function () {
             const scope = this
-            this._run('info', function (response) {
+            this._run('info', null, function (response) {
                 scope.message = response.data
             })
         },
         hist: function () {
             const scope = this
-            this._run('hist', scope.sess, function (response) {
+            this._run('hist', null, scope.sess, function (response) {
                 scope.imageHref = response.data
+                scope.imageKey++
             })
         },
-        tsne: function () {
+        scatter: function () {
             const scope = this
-            this._run('tsne', function (response) {
+            this._run('scatter', null, function (response) {
                 scope.imageHref = response.data
+                scope.imageKey++
             })
         },
         pca: function () {
             const scope = this
-            this._run('pca', function (response) {
+            this._run('pca', null, function (response) {
                 scope.arr = response.data
             })
         },
         kmeans: function () {
             const scope = this
-            this._run('kmeans', function (response) {
-                [scope.items, scope.fields] = scope.pythonDataframeToVueTable(response.data)
+            this._run('kmeans', {clusters: parseInt(scope.clusters)}, function () {
+                scope.message = 'Success'
             })
-        }
+        },
+        tsne: function () {
+            const scope = this
+            this._run('tsne', null, function () {
+                scope.message = 'Success'
+            })
+        },
+        tsne_lite: function () {
+            const scope = this
+            this._run('tsne_lite', null, function () {
+                scope.message = 'Success'
+            })
+        },
     }
 })

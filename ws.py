@@ -19,75 +19,100 @@ class MyWebService(object):
             sess = data['sess']
             x_var_name = data['x']
             y_var_name = data['y']
+            params = data['params']
             if data['cmd'] == 'load':
                 x, y = ml.load_csv_as_df(sess)
-                self.sessions[sess] = {'X': {'X_train': x}, 'y': {}}
+                self.sessions[sess] = {'X': {'X': x}, 'y': {}}
                 if y is not None:
-                    self.sessions[sess]['y']['y_train'] = y
+                    self.sessions[sess]['y']['y'] = y
                 return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
                                                              'y': list(self.sessions[sess]['y'].keys())}})
             elif data['cmd'] == 'head':
                 if sess in self.sessions:
-                    df = self.sessions[sess]['X'][x_var_name]
-                    return json.dumps(
-                        {'success': True, 'data': df.head().to_dict()})
+                    x_dict = self.sessions[sess]['X'][x_var_name].head().to_dict()
+                    y_dict = None
+                    if y_var_name is not None:
+                        print(y_var_name)
+                        y_dict = self.sessions[sess]['y'][y_var_name].head().to_dict()
+                    return json.dumps({'success': True, 'data': list(filter(None, [x_dict, y_dict]))})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'describe':
                 if sess in self.sessions:
-                    df = self.sessions[sess]['X'][x_var_name]
-                    return json.dumps(
-                        {'success': True, 'data': df.describe().to_dict()})
+                    x_dict = self.sessions[sess]['X'][x_var_name].describe().to_dict()
+                    y_dict = None
+                    if y_var_name is not None:
+                        y_dict = self.sessions[sess]['y'][y_var_name].describe().to_dict()
+                    return json.dumps({'success': True, 'data': list(filter(None, [x_dict, y_dict]))})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'info':
                 if sess in self.sessions:
-                    df = self.sessions[sess]['X'][x_var_name]
+                    x_df = self.sessions[sess]['X'][x_var_name]
                     buffer = io.StringIO()
-                    df.info(buf=buffer)
+                    x_df.info(buf=buffer)
                     return json.dumps(
                         {'success': True, 'data': buffer.getvalue()})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
-            elif data['cmd'] == 'hist':
-                if sess in self.sessions:
-                    df = self.sessions[sess]['X'][x_var_name]
-                    path = ml.plot_hist(df, sess)
-                    return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                                 'y': list(self.sessions[sess]['y'].keys())},
-                                       'data': path})
-                else:
-                    return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'pca':
                 if sess in self.sessions:
-                    df = self.sessions[sess]['X'][x_var_name]
-                    [df_pca, variance] = ml.pca(df)
-                    self.sessions[sess]['X']['X_train_PCA'] = df_pca
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    [df_pca, variance] = ml.pca(x_df)
+                    self.sessions[sess]['X']['PCA'] = df_pca
                     return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
                                                                  'y': list(self.sessions[sess]['y'].keys())},
                                        'data': variance})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'tsne_lite':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    df_tsne = ml.tsne_lite(x_df)
+                    self.sessions[sess]['X']['TSNE'] = df_tsne
+                    return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
+                                                                 'y': list(self.sessions[sess]['y'].keys())}, })
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'tsne':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    df_tsne = ml.tsne(x_df)
+                    self.sessions[sess]['X']['TSNE'] = df_tsne
+                    return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
+                                                                 'y': list(self.sessions[sess]['y'].keys())}, })
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'kmeans':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    k_means = ml.kmeans(x_df, params['clusters'])
+                    self.sessions[sess]['X']['KMeans_best_reps'] = k_means['best_reps']
+                    self.sessions[sess]['X']['KMeans_best20'] = k_means['best20']
+                    self.sessions[sess]['X']['KMeans_dist'] = k_means['dist']
+                    self.sessions[sess]['X']['KMeans_clusters'] = k_means['clusters']
+                    self.sessions[sess]['y']['KMeans_labels'] = k_means['labels']
+                    self.sessions[sess]['y']['KMeans_best20_labels'] = k_means['best20labels']
+                    return json.dumps(
+                        {'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
+                                                   'y': list(self.sessions[sess]['y'].keys())}})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'hist':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    path = ml.plot_hist(x_df, sess)
+                    return json.dumps({'success': True, 'data': path})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'scatter':
                 if sess in self.sessions:
                     x_df = self.sessions[sess]['X'][x_var_name]
                     y_df = None
                     if y_var_name is not None:
                         y_df = self.sessions[sess]['y'][y_var_name]
-                    path = ml.plot_tsne(x_df, y_df, sess)
+                    path = ml.scatter_plot(sess, x_df, y_df)
                     return json.dumps({'success': True, 'data': path})
-                else:
-                    return '{"success": false, "message": "Session does not exist"}'
-            elif data['cmd'] == 'kmeans':
-                if sess in self.sessions:
-                    df = self.sessions[sess]['X'][x_var_name]
-                    [labels, reps] = ml.k_means(df)
-                    self.sessions[sess]['X']['KMeans_reps'] = reps
-                    self.sessions[sess]['y']['KMeans_labels'] = labels
-                    return json.dumps(
-                        {'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                   'y': list(self.sessions[sess]['y'].keys())},
-                         'data': reps.head().to_dict()})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
 

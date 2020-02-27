@@ -24,7 +24,7 @@
             <option v-for="option in vars.X" v-bind:value="option">{{ option }}</option>
         </select>
         <select v-bind:disabled="vars.y.length < 1" v-model="selectedYVar">
-            <option value="null"></option>
+            <option value=""></option>
             <option v-for="option in vars.y" v-bind:value="option">{{ option }}</option>
         </select>
         <button v-on:click="getHead" v-bind:disabled="selectedXVar === null">Head</button>
@@ -32,12 +32,16 @@
         <button v-on:click="hist" v-bind:disabled="selectedXVar === null">Histogram</button>
         <button v-on:click="pca" v-bind:disabled="selectedXVar === null">PCA</button>
         <button v-on:click="tsne" v-bind:disabled="selectedXVar === null">t-SNE</button>
+        <button v-on:click="tsne_lite" v-bind:disabled="selectedXVar === null">t-SNE Lite</button>
+        <label>Clusters<input type="number" v-model="clusters"></label>
         <button v-on:click="kmeans" v-bind:disabled="selectedXVar === null">K-Means</button>
+        <button v-on:click="scatter" v-bind:disabled="selectedXVar === null">Scatter Plot</button>
     </div>
     <br/>
     <p v-if="message">{{ message }}</p>
-    <b-table v-if="items" striped hover :items="items" :fields="fields"></b-table>
-    <img v-if="imageHref" v-bind:src="imageHref">
+    <b-table v-if="items[0]" striped hover :items="items[0]" :fields="fields[0]"></b-table>
+    <b-table v-if="items[1]" striped hover :items="items[1]" :fields="fields[1]"></b-table>
+    <img v-if="imageHref" v-bind:src="imageHref" :key="imageKey">
     <div v-if="arr">
         <div v-for="str in arr">{{ str }}</div>
         <br/>

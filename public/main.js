@@ -14,13 +14,17 @@ new Vue({
             selectedYVar: null,
             imageKey: 0,
             clusters: 10,
+            selectedColName: null,
+            colNames: []
         }
     },
     methods: {
-        _run: function (cmd, params, success) {
+        _run: function (cmd, params, success, silent=false) {
             const scope = this
-            scope._clearAll()
-            scope.message = "just a moment..."
+            if (!silent) {
+                scope._clearAll()
+                scope.message = "just a moment..."
+            }
             fetch('http://localhost:8080/process', {
                 method: 'post', headers: {
                     'Content-Type': 'application/json'
@@ -39,7 +43,9 @@ new Vue({
                 return response.json()
             }).then(function (jsonResponse) {
                 let response = JSON.parse(jsonResponse)
-                scope.message = response.message
+                if (!silent) {
+                    scope.message = response.message
+                }
                 if (response.success === true) {
                     if (response.vars) {
                         let oldVars = scope.vars
@@ -60,8 +66,10 @@ new Vue({
                     }
                     success(response)
                 }
-            }).catch(function(error) {
-                scope.message = error
+            }).catch(function (error) {
+                if (!silent) {
+                    scope.message = error
+                }
             })
         },
         pythonDataframeToVueTable: function (df) {
@@ -90,6 +98,9 @@ new Vue({
         },
         load: function () {
             const scope = this
+            scope.selectedXVar = null
+            scope.selectedYVar = null
+            scope.vars = {X: [], y: []}
             this._run('load', null, function () {
                 scope.message = 'Success'
             })
@@ -152,11 +163,35 @@ new Vue({
                 scope.message = 'Success'
             })
         },
-        tsne_lite: function () {
+        tsneLite: function () {
             const scope = this
-            this._run('tsne_lite', null, function () {
+            this._run('tsneLite', null, function () {
                 scope.message = 'Success'
             })
         },
+        featureScale: function () {
+            const scope = this
+            this._run('featureScale', null, function () {
+                scope.message = 'Success'
+            })
+        },
+        cat2int: function () {
+            const scope = this
+            this._run('cat2int', {colName: scope.selectedColName}, function () {
+                scope.message = 'Success'
+            })
+        }
+    },
+    watch: {
+        selectedXVar() {
+            const scope = this
+            this._run('colNames',null, function(response) {
+                if (response.data && response.data.length) {
+                    scope.selectedColName = response.data[0]
+                    scope.colNames = response.data
+                }
+                scope.message = 'Success'
+            }, true)
+        }
     }
 })

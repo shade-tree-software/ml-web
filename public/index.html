@@ -29,12 +29,23 @@
         </select>
         <button v-on:click="getHead" v-bind:disabled="selectedXVar === null">Head</button>
         <button v-on:click="describe" v-bind:disabled="selectedXVar === null">Describe</button>
-        <button v-on:click="hist" v-bind:disabled="selectedXVar === null">Histogram</button>
+        <br/>
+
+        <select v-bind:disabled="vars.X.length < 1" v-model="selectedColName">
+            <option v-for="option in colNames" v-bind:value="option">{{ option }}</option>
+        </select>
+        <button v-on:click="cat2int">Categorical to Integer</button>
+        <button v-on:click="featureScale">Scale Features</button>
+        <br/>
+
         <button v-on:click="pca" v-bind:disabled="selectedXVar === null">PCA</button>
         <button v-on:click="tsne" v-bind:disabled="selectedXVar === null">t-SNE</button>
-        <button v-on:click="tsne_lite" v-bind:disabled="selectedXVar === null">t-SNE Lite</button>
+        <button v-on:click="tsneLite" v-bind:disabled="selectedXVar === null">t-SNE Lite</button>
         <label>Clusters<input type="number" v-model="clusters"></label>
         <button v-on:click="kmeans" v-bind:disabled="selectedXVar === null">K-Means</button>
+        <br/>
+
+        <button v-on:click="hist" v-bind:disabled="selectedXVar === null">Histogram</button>
         <button v-on:click="scatter" v-bind:disabled="selectedXVar === null">Scatter Plot</button>
     </div>
     <br/>

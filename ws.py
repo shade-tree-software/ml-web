@@ -66,7 +66,7 @@ class MyWebService(object):
                     return json.dumps({'success': True, 'vars': self.__get_var_names(sess), 'data': variance})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
-            elif data['cmd'] == 'tsne_lite':
+            elif data['cmd'] == 'tsneLite':
                 if sess in self.sessions:
                     x_df = self.sessions[sess]['X'][x_var_name]
                     df_tsne = ml.tsne_lite(x_df)
@@ -90,6 +90,7 @@ class MyWebService(object):
                     self.sessions[sess]['X']['KMeans_best20'] = k_means['best20']
                     self.sessions[sess]['X']['KMeans_dist'] = k_means['dist']
                     self.sessions[sess]['X']['KMeans_clusters'] = k_means['clusters']
+                    self.sessions[sess]['y']['KMeans_best_reps_labels'] = k_means['best_reps_labels']
                     self.sessions[sess]['y']['KMeans_labels'] = k_means['labels']
                     self.sessions[sess]['y']['KMeans_best20_labels'] = k_means['best20labels']
                     return json.dumps(
@@ -111,6 +112,30 @@ class MyWebService(object):
                         y_df = self.sessions[sess]['y'][y_var_name]
                     path = ml.scatter_plot(sess, x_df, y_df)
                     return json.dumps({'success': True, 'data': path})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'cat2int':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    col_name = params['colName']
+                    self.sessions[sess]['X']['Cat2Int'] = ml.cat2int(x_df, col_name)
+                    return json.dumps(
+                        {'success': True, 'vars': self.__get_var_names(sess)})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'colNames':
+                if sess in self.sessions:
+                    col_names = list(self.sessions[sess]['X'][x_var_name].columns)
+                    return json.dumps(
+                        {'success': True, 'data': col_names})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'featureScale':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    self.sessions[sess]['X']['Feature Scaled'] = ml.feature_scale(x_df)
+                    return json.dumps(
+                        {'success': True, 'vars': self.__get_var_names(sess)})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
 

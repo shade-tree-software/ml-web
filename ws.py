@@ -10,6 +10,10 @@ ml = mlTools.MachineLearning()
 class MyWebService(object):
     sessions = {}
 
+    def __get_var_names(self, sess):
+        return {'X': list(self.sessions[sess]['X'].keys()),
+                'y': list(self.sessions[sess]['y'].keys())}
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -25,8 +29,7 @@ class MyWebService(object):
                 self.sessions[sess] = {'X': {'X': x}, 'y': {}}
                 if y is not None:
                     self.sessions[sess]['y']['y'] = y
-                return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                             'y': list(self.sessions[sess]['y'].keys())}})
+                return json.dumps({'success': True, 'vars': self.__get_var_names(sess)})
             elif data['cmd'] == 'head':
                 if sess in self.sessions:
                     x_dict = self.sessions[sess]['X'][x_var_name].head().to_dict()
@@ -60,9 +63,7 @@ class MyWebService(object):
                     x_df = self.sessions[sess]['X'][x_var_name]
                     [df_pca, variance] = ml.pca(x_df)
                     self.sessions[sess]['X']['PCA'] = df_pca
-                    return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                                 'y': list(self.sessions[sess]['y'].keys())},
-                                       'data': variance})
+                    return json.dumps({'success': True, 'vars': self.__get_var_names(sess), 'data': variance})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'tsne_lite':
@@ -70,8 +71,7 @@ class MyWebService(object):
                     x_df = self.sessions[sess]['X'][x_var_name]
                     df_tsne = ml.tsne_lite(x_df)
                     self.sessions[sess]['X']['TSNE'] = df_tsne
-                    return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                                 'y': list(self.sessions[sess]['y'].keys())}, })
+                    return json.dumps({'success': True, 'vars': self.__get_var_names(sess)})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'tsne':
@@ -79,8 +79,7 @@ class MyWebService(object):
                     x_df = self.sessions[sess]['X'][x_var_name]
                     df_tsne = ml.tsne(x_df)
                     self.sessions[sess]['X']['TSNE'] = df_tsne
-                    return json.dumps({'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                                 'y': list(self.sessions[sess]['y'].keys())}, })
+                    return json.dumps({'success': True, 'vars': self.__get_var_names(sess)})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'kmeans':
@@ -94,8 +93,7 @@ class MyWebService(object):
                     self.sessions[sess]['y']['KMeans_labels'] = k_means['labels']
                     self.sessions[sess]['y']['KMeans_best20_labels'] = k_means['best20labels']
                     return json.dumps(
-                        {'success': True, 'vars': {'X': list(self.sessions[sess]['X'].keys()),
-                                                   'y': list(self.sessions[sess]['y'].keys())}})
+                        {'success': True, 'vars': self.__get_var_names(sess)})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'
             elif data['cmd'] == 'hist':

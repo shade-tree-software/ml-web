@@ -33,19 +33,35 @@ new Vue({
                     sess: scope.sess
                 })
             }).then(function (response) {
+                if (!response.ok) {
+                    throw Error(response.statusText)
+                }
                 return response.json()
             }).then(function (jsonResponse) {
                 let response = JSON.parse(jsonResponse)
                 scope.message = response.message
                 if (response.success === true) {
                     if (response.vars) {
+                        let oldVars = scope.vars
                         scope.vars = response.vars
-                        if (scope.selectedXVar === null && scope.vars.X) {
-                            scope.selectedXVar = scope.vars.X[0]
+                        // If there are any new vars, set those as selected in the dropdowns
+                        if (response.vars.X) {
+                            let newXVars = response.vars.X.filter(e => !oldVars.X.includes(e))
+                            if (newXVars.length) {
+                                scope.selectedXVar = newXVars[0]
+                            }
+                        }
+                        if (response.vars.y) {
+                            let newYVars = response.vars.y.filter(e => !oldVars.y.includes(e))
+                            if (newYVars.length) {
+                                scope.selectedYVar = newYVars[0]
+                            }
                         }
                     }
                     success(response)
                 }
+            }).catch(function(error) {
+                scope.message = error
             })
         },
         pythonDataframeToVueTable: function (df) {

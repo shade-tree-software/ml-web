@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <link type="text/css" rel="stylesheet" href="main.css"/>
+
     <!-- Load required Bootstrap and BootstrapVue CSS -->
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css"/>
@@ -20,14 +22,20 @@
     <div>
         <label>Session ID<input v-model="sess"></label>
         <button v-on:click="load">Load</button>
-        <select v-bind:disabled="vars.X.length < 1" v-model="selectedXVar">
+        <br/>
+
+        <label>X<select v-bind:disabled="vars.X.length < 1" v-model="selectedXVar">
             <option v-for="option in vars.X" v-bind:value="option">{{ option }}</option>
-        </select>
-        <select v-bind:disabled="vars.y.length < 1" v-model="selectedYVar">
+        </select></label>
+        <label>Y<select v-bind:disabled="vars.y.length < 1" v-model="selectedYVar">
             <option value=""></option>
             <option v-for="option in vars.y" v-bind:value="option">{{ option }}</option>
-        </select>
-        <button v-on:click="getHead" v-bind:disabled="selectedXVar === null">Head</button>
+        </select></label>
+        <br/>
+
+        <label>Page #<input type="number" v-model.number="pageNum" v-bind:disabled="selectedXVar === null"></label>
+        <label># of Rows<input type="number" v-model.number="rowCount" v-bind:disabled="selectedXVar === null"></label>
+        <button v-on:click="showTable" v-bind:disabled="selectedXVar === null">Show Table</button>
         <button v-on:click="describe" v-bind:disabled="selectedXVar === null">Describe</button>
         <br/>
 
@@ -38,11 +46,13 @@
         <button v-on:click="featureScale">Scale Features</button>
         <br/>
 
+        <label>Clusters<input type="number" v-model.number="clusters" v-bind:disabled="selectedXVar === null"></label>
+        <button v-on:click="kmeans" v-bind:disabled="selectedXVar === null">K-Means</button>
+        <br/>
+
         <button v-on:click="pca" v-bind:disabled="selectedXVar === null">PCA</button>
         <button v-on:click="tsne" v-bind:disabled="selectedXVar === null">t-SNE</button>
         <button v-on:click="tsneLite" v-bind:disabled="selectedXVar === null">t-SNE Lite</button>
-        <label>Clusters<input type="number" v-model="clusters"></label>
-        <button v-on:click="kmeans" v-bind:disabled="selectedXVar === null">K-Means</button>
         <br/>
 
         <button v-on:click="hist" v-bind:disabled="selectedXVar === null">Histogram</button>

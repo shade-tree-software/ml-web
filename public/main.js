@@ -15,11 +15,13 @@ new Vue({
             imageKey: 0,
             clusters: 10,
             selectedColName: null,
-            colNames: []
+            colNames: [],
+            pageNum: 0,
+            rowCount: 10,
         }
     },
     methods: {
-        _run: function (cmd, params, success, silent=false) {
+        _run: function (cmd, params, success, silent = false) {
             const scope = this
             if (!silent) {
                 scope._clearAll()
@@ -105,9 +107,9 @@ new Vue({
                 scope.message = 'Success'
             })
         },
-        getHead: function () {
+        showTable: function () {
             const scope = this
-            this._run('head', null, function (response) {
+            this._run('showTable', {pageNum: scope.pageNum, rowCount: scope.rowCount}, function (response) {
                 let index = 0
                 for (let df of response.data) {
                     [scope.items[index], scope.fields[index]] = scope.pythonDataframeToVueTable(df)
@@ -153,7 +155,7 @@ new Vue({
         },
         kmeans: function () {
             const scope = this
-            this._run('kmeans', {clusters: parseInt(scope.clusters)}, function () {
+            this._run('kmeans', {clusters: scope.clusters}, function () {
                 scope.message = 'Success'
             })
         },
@@ -185,7 +187,7 @@ new Vue({
     watch: {
         selectedXVar() {
             const scope = this
-            this._run('colNames',null, function(response) {
+            this._run('colNames', null, function (response) {
                 if (response.data && response.data.length) {
                     scope.selectedColName = response.data[0]
                     scope.colNames = response.data

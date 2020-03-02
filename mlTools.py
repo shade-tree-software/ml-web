@@ -42,11 +42,12 @@ class MachineLearning:
         tmp_df = pd.DataFrame(data=x_df.loc[:, 0:1], index=x_df.index)
         if y_df is not None:
             tmp_df = pd.concat((tmp_df, y_df), axis=1, join='inner')
-            tmp_df.columns = ['First Vector', 'Second Vector', 'Label']
-            sns.lmplot(x='First Vector', y='Second Vector', hue='Label', data=tmp_df, fit_reg=False)
+            tmp_df.columns = ['x', 'y', 'c']
+            plt.scatter(x=tmp_df['x'], y=tmp_df['y'], c=tmp_df['c'])
+            plt.legend()
         else:
-            tmp_df.columns = ['First Vector', 'Second Vector']
-            sns.lmplot(x='First Vector', y='Second Vector', data=tmp_df, fit_reg=False)
+            tmp_df.columns = ['x', 'y']
+            plt.scatter(x=tmp_df['x'], y=tmp_df['y'])
         return self.__save_plot_to_file(sess)
 
     def tsne_lite(self, x_df, max_row=5000, max_col=9):

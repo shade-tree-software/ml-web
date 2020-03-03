@@ -38,16 +38,24 @@ class MachineLearning:
         df.hist(bins=50, figsize=(20, 15))
         return self.__save_plot_to_file(sess)
 
-    def scatter_plot(self, sess, x_df, y_df=None):
+    def scatter_plot(self, sess, x_df, clusters_df=None):
         tmp_df = pd.DataFrame(data=x_df.loc[:, 0:1], index=x_df.index)
-        if y_df is not None:
-            tmp_df = pd.concat((tmp_df, y_df), axis=1, join='inner')
-            tmp_df.columns = ['x', 'y', 'c']
-            plt.scatter(x=tmp_df['x'], y=tmp_df['y'], c=tmp_df['c'])
-            plt.legend()
+        if clusters_df is None:
+            tmp_df.columns = ['X', 'Y']
+            sns.lmplot(x='X', y='Y', data=tmp_df, fit_reg=False)
         else:
-            tmp_df.columns = ['x', 'y']
-            plt.scatter(x=tmp_df['x'], y=tmp_df['y'])
+            # combine the x, y, and cluster variables into a single dataframe
+            tmp_df = pd.concat((tmp_df, clusters_df), axis=1, join='inner')
+            tmp_df.columns = ['X', 'Y', 'Cluster']
+
+            # make a duplicate of any row that is the only row for that cluster as a workaround
+            # to a seaborn scatter-plot bug where the plot throws an exception if there is only
+            # one row for a given hue.
+            lone_hue_df = tmp_df.groupby(['Cluster']).filter(lambda x: len(x) == 1)
+            tmp_df = pd.concat((tmp_df, lone_hue_df), axis=0, join='inner')
+
+            # draw the scatter-plot, showing each cluster in a different hue
+            sns.lmplot(x='X', y='Y', hue='Cluster', data=tmp_df, fit_reg=False)
         return self.__save_plot_to_file(sess)
 
     def tsne_lite(self, x_df, max_row=5000, max_col=9):

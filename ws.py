@@ -37,7 +37,6 @@ class MyWebService(object):
                     x_dict = self.sessions[sess]['X'][x_var_name].iloc[start_row:end_row, :].to_dict()
                     y_dict = None
                     if y_var_name is not None:
-                        print(y_var_name)
                         y_dict = self.sessions[sess]['y'][y_var_name].iloc[start_row:end_row, :].to_dict()
                     return json.dumps({'success': True, 'data': list(filter(None, [x_dict, y_dict]))})
                 else:
@@ -105,6 +104,13 @@ class MyWebService(object):
                 if sess in self.sessions:
                     x_df = self.sessions[sess]['X'][x_var_name]
                     path = ml.plot_hist(x_df, sess)
+                    return json.dumps({'success': True, 'data': path})
+                else:
+                    return '{"success": false, "message": "Session does not exist"}'
+            elif data['cmd'] == 'image':
+                if sess in self.sessions:
+                    x_df = self.sessions[sess]['X'][x_var_name]
+                    path = ml.plot_image(x_df.iloc[params['row'], :], sess)
                     return json.dumps({'success': True, 'data': path})
                 else:
                     return '{"success": false, "message": "Session does not exist"}'

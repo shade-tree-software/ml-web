@@ -13,6 +13,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
+import math
 
 LOAD_PATH = 'data'
 WORKING_PATH = 'public/tmp'
@@ -33,6 +34,14 @@ class MachineLearning:
         fig_path = os.path.join(WORKING_PATH, "fig_" + str(sess) + '_' + str(int(time.time())))
         plt.savefig(fig_path)
         return '/' + fig_path + '.png'
+
+    def plot_image(self, series, sess):
+        # takes a pandas series, reshapes it into a square, and plots it as a grayscale image
+        h = w = int(math.sqrt(series.size))
+        img = series.values.reshape(h, w)
+        plt.clf()
+        plt.imshow(img, cmap="gray")
+        return self.__save_plot_to_file(sess)
 
     def plot_hist(self, df, sess):
         df.hist(bins=50, figsize=(20, 15))

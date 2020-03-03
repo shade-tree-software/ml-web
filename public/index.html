@@ -57,6 +57,7 @@
 
         <button v-on:click="hist" v-bind:disabled="selectedXVar === null">Histogram</button>
         <button v-on:click="scatter" v-bind:disabled="selectedXVar === null">Scatter Plot</button>
+        <button v-on:click="image" v-bind:disabled="selectedXVar === null">Image</button>
     </div>
     <br/>
     <p v-if="message">{{ message }}</p>

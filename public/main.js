@@ -133,9 +133,16 @@ new Vue({
                 scope.message = response.data
             })
         },
+        image: function () {
+            const scope = this
+            this._run('image', {row: scope.pageNum * scope.rowCount}, function (response) {
+                scope.imageHref = response.data
+                scope.imageKey++
+            })
+        },
         hist: function () {
             const scope = this
-            this._run('hist', null, scope.sess, function (response) {
+            this._run('hist', null, function (response) {
                 scope.imageHref = response.data
                 scope.imageKey++
             })

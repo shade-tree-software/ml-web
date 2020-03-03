@@ -93,6 +93,18 @@ class MachineLearning:
         best_reps_df = df.iloc[best_reps_idx]
         best_reps_labels = labels_df.iloc[best_reps_idx]
 
+        # for each cluster, the 5 samples that are closest to the cluster centroid
+        x_cluster_dist = dist[np.arange(len(df)), k_means.labels_]
+        for i in range(k):
+            in_cluster = (k_means.labels_ == i)
+            cluster_dist = x_cluster_dist[in_cluster]
+            cutoff_distance = np.sort(cluster_dist)[:5][-1]
+            above_cutoff = (x_cluster_dist > cutoff_distance)
+            x_cluster_dist[in_cluster & above_cutoff] = -1
+        best_5_index = (x_cluster_dist != -1)
+        best_5_df = df[best_5_index]
+        best_5_labels_df = labels_df[best_5_index]
+
         # for each cluster, the 20% of the samples that are closest to the cluster centroid
         percentile_closest = 20
         x_cluster_dist = dist[np.arange(len(df)), k_means.labels_]
@@ -110,7 +122,8 @@ class MachineLearning:
         clusters_df = pd.DataFrame(data=k_means.cluster_centers_)
 
         return {'labels': labels_df, 'dist': dist_df, 'best_reps': best_reps_df, 'clusters': clusters_df,
-                'best20': best_20_df, 'best20labels': best_20_labels_df, 'best_reps_labels': best_reps_labels}
+                'best20': best_20_df, 'best20labels': best_20_labels_df, 'best_reps_labels': best_reps_labels,
+                'best5': best_5_df, 'best5labels': best_5_labels_df}
 
     @staticmethod
     def cat2int(df, col_name):

@@ -89,12 +89,14 @@ class MyWebService(object):
                     x_df = self.sessions[sess]['X'][x_var_name]
                     k_means = ml.kmeans(x_df, params['clusters'])
                     self.sessions[sess]['X']['KMeans_best_reps'] = k_means['best_reps']
-                    self.sessions[sess]['X']['KMeans_best20'] = k_means['best20']
+                    self.sessions[sess]['X']['KMeans_best5'] = k_means['best5']
+                    self.sessions[sess]['X']['KMeans_best20pct'] = k_means['best20']
                     self.sessions[sess]['X']['KMeans_dist'] = k_means['dist']
                     self.sessions[sess]['X']['KMeans_clusters'] = k_means['clusters']
                     self.sessions[sess]['y']['KMeans_best_reps_labels'] = k_means['best_reps_labels']
                     self.sessions[sess]['y']['KMeans_labels'] = k_means['labels']
-                    self.sessions[sess]['y']['KMeans_best20_labels'] = k_means['best20labels']
+                    self.sessions[sess]['y']['KMeans_best5_labels'] = k_means['best5labels']
+                    self.sessions[sess]['y']['KMeans_best20pct_labels'] = k_means['best20labels']
                     return json.dumps(
                         {'success': True, 'vars': self.__get_var_names(sess)})
                 else:
